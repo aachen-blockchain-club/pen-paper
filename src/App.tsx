@@ -78,25 +78,19 @@ function ComponentTwo() {
   };
 
   const handleNumTxsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let newNumTxs = parseInt(event.target.value);
+
     setState({
       ...state,
-      numTxs: parseInt(event.target.value),
+      numTxs: newNumTxs,
+      txs: Array(newNumTxs || 0).fill(getDefaultTxValue()),
     });
   };
 
   const handleTxsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newTxs: Transaction[] = [];
-    const txContainers = document.querySelectorAll('[id^="tx-container-"]');
-    txContainers.forEach((txContainer, i) => {
-      let from = (txContainer.querySelector(`#tx-from-${i}`) as HTMLInputElement).value ?? "";
-      let to = (txContainer.querySelector(`#tx-to-${i}`) as HTMLInputElement).value ?? "";
-      let amount = parseFloat((txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement).value ?? "") || 0;
-      newTxs.push([from, to, amount]);
-    });
-
     setState({
       ...state,
-      txs: newTxs,
+      txs: getTxData(),
     });
   };
 
@@ -238,4 +232,26 @@ export default function BasicTabs() {
       </TabPanel>
     </Box>
   );
+}
+
+
+// Helper methods
+
+function getTxData(): Transaction[] {
+  const newTxs: Transaction[] = [];
+  const txContainers = document.querySelectorAll('[id^="tx-container-"]');
+  txContainers.forEach((txContainer, i) => {
+    let from = (txContainer.querySelector(`#tx-from-${i}`) as HTMLInputElement).value ?? "";
+    let to = (txContainer.querySelector(`#tx-to-${i}`) as HTMLInputElement).value ?? "";
+    let amount = parseFloat((txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement).value ?? "") || 0;
+    newTxs.push([from, to, amount]);
+  });
+
+  return newTxs
+}
+
+
+function getDefaultTxValue(): Transaction {
+  // empty "from", "to" and "amount" is 0
+  return ["", "", 0];
 }
