@@ -1,0 +1,36 @@
+name: "CI/CD"
+
+on:
+  push:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  test-deploy:
+    name: test and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # install dependencies and apply patches (if any exist)
+      - name: install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      # Deploy, only runs on "push" event on main branch
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' }}
+        with:
+          deploy_key: ${{ secrets.GH_PAGES_DEPLOYER }}
+          publish_dir: ./build
+          publish_branch: gh-pages
