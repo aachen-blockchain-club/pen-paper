@@ -17,11 +17,10 @@ interface TabPanelProps {
 // Transation object uses integer keys for deterministic JSON stringification
 // That's important for getting the same hash for the same Transaction object
 // See: https://stackoverflow.com/a/43049877 
-type Transaction = {
-  0: string,  // from
-  1: string,  // to
-  2: number,  // amount
-};
+// 0: from
+// 1: to
+// 2: amount
+type Transaction = [string, string, number];
 
 function ComponentOne() {
   const [msg, setMsg] = React.useState('');
@@ -62,10 +61,12 @@ function ComponentTwo() {
     prevBlockHash: string;
     numTxs: number;
     txs: Transaction[];
+    nonce: number;
   }>({
     prevBlockHash: "",
     numTxs: 1,
     txs: [],
+    nonce: 0,
   });
   
 
@@ -89,17 +90,21 @@ function ComponentTwo() {
     txContainers.forEach((txContainer, i) => {
       let from = (txContainer.querySelector(`#tx-from-${i}`) as HTMLInputElement).value ?? "";
       let to = (txContainer.querySelector(`#tx-to-${i}`) as HTMLInputElement).value ?? "";
-      let amount = parseInt((txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement).value ?? "") || 0;
-      newTxs.push({ 0: from, 1: to, 2: amount });
+      let amount = parseFloat((txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement).value ?? "") || 0;
+      newTxs.push([from, to, amount]);
     });
-    console.log("before:")
-    console.log(state);
+
     setState({
       ...state,
       txs: newTxs,
     });
-    console.log("after:")
-    console.log(state);
+  };
+
+  const handleNonceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setState({
+      ...state,
+      nonce: parseInt(event.target.value),
+    });
   };
 
   // create list of TX input fields
@@ -164,7 +169,16 @@ function ComponentTwo() {
       </Box>
       { txInputs }
       <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
-        Block Hash: { sha256(`{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(state.txs)}}`) }{"\n"}
+        Block Hash: { sha256(`{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(state.txs)},"nonce":${state.nonce}}`) }{"\n"}
+      </Box>
+      <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
+        <TextField
+            label="Nonce"
+            type="number"
+            defaultValue={0}
+            value={state.nonce}
+            onChange={handleNonceChange}
+          />
       </Box>
     </>
   );
@@ -220,7 +234,7 @@ export default function BasicTabs() {
         <ComponentTwo/>
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        TODO!
       </TabPanel>
     </Box>
   );
