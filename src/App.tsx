@@ -163,7 +163,11 @@ function ComponentTwo() {
       </Box>
       { txInputs }
       <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
-        Block Hash: { sha256(`{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(state.txs)},"nonce":${state.nonce}}`) }{"\n"}
+        Block Hash: {
+          Base64.fromUint8Array(new Uint8Array(
+            sha256.arrayBuffer(`{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(state.txs)},"nonce":${state.nonce}}`)
+          ))
+        }{"\n"}
       </Box>
       <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
         <TextField
