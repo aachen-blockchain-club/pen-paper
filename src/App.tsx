@@ -1,12 +1,13 @@
-import * as React from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { sha256 } from 'js-sha256';
-import { Base64 } from 'js-base64';
-
+import * as React from "react";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import { sha256 } from "js-sha256";
+import { Base64 } from "js-base64";
+import { Accordion, AccordionSummary, AccordionDetails, Button } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -23,7 +24,7 @@ interface TabPanelProps {
 type Transaction = [string, string, number];
 
 function ComponentOne() {
-  const [msg, setMsg] = React.useState('');
+  const [msg, setMsg] = React.useState("");
 
   const handleMsgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMsg(event.target.value);
@@ -31,28 +32,21 @@ function ComponentOne() {
 
   return (
     <>
-      <Box
-        component="form"
-        sx={{
-          '& > :not(style)': { m: 1, width: '25ch' },
-        }}
-        noValidate
-        autoComplete="off"
-      >
-        <TextField
-          id="outlined-name"
-          label="Text"
-          value={msg}
-          onChange={handleMsgChange}
+      <TextField
+        sx={{ width: "100%", mb: 3 }}
+        id="outlined-name"
+        label="Text"
+        value={msg}
+        onChange={handleMsgChange}
         />
-      </Box>
-      <Box component="span" sx={{ display: 'block' }}>
-        Base 16: { sha256(msg) }{"\n"}
-      </Box>
-      <Box component="span" sx={{ display: 'block' }}>
-        Base 64: { Base64.fromUint8Array(new Uint8Array(sha256.arrayBuffer(msg))) }
-      </Box>
-    </>
+      <h3>Base 16</h3>
+      <Box sx={{ width: "100%", wordWrap: "break-word" }}>{sha256(msg)}</Box>
+
+      <h3>Base 64</h3>
+      <Box sx={{ width: "100%", wordWrap: "break-word" }}>
+        {Base64.fromUint8Array(new Uint8Array(sha256.arrayBuffer(msg)))}
+        </Box>
+      </>
   );
 }
 
@@ -68,9 +62,10 @@ function ComponentTwo() {
     txs: [],
     nonce: 0,
   });
-  
 
-  const handlePrevBlockHashChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePrevBlockHashChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setState({
       ...state,
       prevBlockHash: event.target.value,
@@ -105,79 +100,111 @@ function ComponentTwo() {
   const txInputs = [];
   for (let i = 0; i < state.numTxs; i++) {
     txInputs.push(
-      <Box
-        key={i}
-        id={`tx-container-${i}`}
-        component="form"
-        sx={{
-          '& > :not(style)': { m: 1, width: '25ch' },
-        }}
-        noValidate
-        autoComplete="off"
-      >
-        <div>TX {i + 1}: </div>
-        <TextField
-          id={`tx-from-${i}`}
-          label="From"
-          onChange={handleTxsChange}
-        />
-        <TextField
-          id={`tx-to-${i}`}
-          label="To"
-          onChange={handleTxsChange}
-        />
-        <TextField
-          id={`tx-amount-${i}`}
-          label="Amount"
-          type="number"
-          defaultValue={0}
-          onChange={handleTxsChange}
-        />
-      </Box>
+            <Accordion>
+                <AccordionSummary 
+                    expandIcon={<ExpandMoreIcon />}
+                >TX {i + 1}</AccordionSummary>
+                <AccordionDetails
+                    key={i}
+                    id={`tx-container-${i}`}
+                    sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'space-around',
+                        justifyContent:'space-around',
+                        gap: 3,
+                    }}
+                >
+                    <TextField
+                      sx={{ width: "100%" }}
+                        id={`tx-from-${i}`}
+                        label="From"
+                        onChange={handleTxsChange}
+                    />
+                    <TextField 
+                        sx={{ width: "100%" }}
+                        id={`tx-to-${i}`} 
+                        label="To" 
+                        onChange={handleTxsChange} 
+                    />
+                    <TextField
+                        sx={{ width: "100%" }}
+                        id={`tx-amount-${i}`}
+                        label="Amount"
+                        type="number"
+                        defaultValue={0}
+                        onChange={handleTxsChange}
+                    />
+                </AccordionDetails>
+            </Accordion>
     );
   }
 
   return (
     <>
-      <Box
-        component="form"
-        sx={{
-          '& > :not(style)': { m: 1, width: '25ch' },
-        }}
-        noValidate
-        autoComplete="off"
-      >
-        <TextField
-          id="outlined-name"
-          label="Previous block hash"
-          value={state.prevBlockHash}
-          onChange={handlePrevBlockHashChange}
-        />
-        <TextField
-          id="outlined-name"
-          label="number of TXs"
-          type="number"
-          value={state.numTxs}
-          onChange={handleNumTxsChange}
-        />
-      </Box>
-      { txInputs }
-      <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
-        Block Hash: {
-          Base64.fromUint8Array(new Uint8Array(
-            sha256.arrayBuffer(`{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(state.txs)},"nonce":${state.nonce}}`)
-          ))
-        }{"\n"}
-      </Box>
-      <Box key={Math.random()} component="span" sx={{ display: 'block' }}>
-        <TextField
-            label="Nonce"
-            type="number"
-            defaultValue={0}
-            value={state.nonce}
-            onChange={handleNonceChange}
-          />
-      </Box>
+            <TextField
+                sx={{ width: "100%", mb: 3 }}
+                id="outlined-name"
+                label="Previous block hash"
+                value={state.prevBlockHash}
+                onChange={handlePrevBlockHashChange}
+            />
+            <TextField
+              sx={{ width: "100%", mb: 3 }}
+                id="outlined-name"
+                label="number of TXs"
+                type="number"
+                value={state.numTxs}
+                onChange={handleNumTxsChange}
+            />
+
+            <Box
+                sx={{ "&:first-child::before": { display: "none" } }}
+            >{txInputs}</Box>
+
+            <Box sx={{ 
+                width: "100%", 
+                mt: 3, 
+                display: "flex", 
+                flexDirection: "row", 
+                alignItems: "center",
+                justifyContent:"center",
+                gap: 3,
+            }}>
+                <TextField
+                    sx={{ flex: 1 }}
+                    label="Nonce"
+                    type="number"
+                    defaultValue={0}
+                    value={state.nonce}
+                    onChange={handleNonceChange}
+                />
+                <Button 
+                    variant="contained" 
+                    sx={{ 
+                        width: "56px", 
+                        height: "56px", 
+                        p: 0, 
+                        minWidth: "unset"
+                    }}
+                    onClick={() => setState({...state, nonce: state.nonce + 1 })}
+                >
+                    +1
+                </Button>
+            </Box>
+
+            <h3>Block Hash</h3>
+      <Box sx={{ width: "100%", wordWrap: "break-word" }}>
+                {Base64.fromUint8Array(
+          new Uint8Array(
+            sha256.arrayBuffer(
+              `{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(
+                state.txs
+              )},"nonce":${state.nonce}}`
+            )
+          )
+        )}
+        </Box>
     </>
   );
 }
@@ -205,7 +232,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
 }
 
@@ -217,19 +244,24 @@ export default function BasicTabs() {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+    <Box sx={{ width: "100%", maxWidth: "800px", mx: "auto" }}>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          aria-label="basic tabs example"
+          centered
+        >
           <Tab label="One" {...a11yProps(0)} />
           <Tab label="Two" {...a11yProps(1)} />
           <Tab label="Three" {...a11yProps(2)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <ComponentOne/>
+        <ComponentOne />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <ComponentTwo/>
+        <ComponentTwo />
       </TabPanel>
       <TabPanel value={value} index={2}>
         TODO!
@@ -238,22 +270,28 @@ export default function BasicTabs() {
   );
 }
 
-
 // Helper methods
 
 function getTxData(): Transaction[] {
   const newTxs: Transaction[] = [];
   const txContainers = document.querySelectorAll('[id^="tx-container-"]');
   txContainers.forEach((txContainer, i) => {
-    let from = (txContainer.querySelector(`#tx-from-${i}`) as HTMLInputElement).value ?? "";
-    let to = (txContainer.querySelector(`#tx-to-${i}`) as HTMLInputElement).value ?? "";
-    let amount = parseFloat((txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement).value ?? "") || 0;
+    let from =
+      (txContainer.querySelector(`#tx-from-${i}`) as HTMLInputElement).value ??
+      "";
+    let to =
+      (txContainer.querySelector(`#tx-to-${i}`) as HTMLInputElement).value ??
+      "";
+    let amount =
+      parseFloat(
+        (txContainer.querySelector(`#tx-amount-${i}`) as HTMLInputElement)
+          .value ?? ""
+      ) || 0;
     newTxs.push([from, to, amount]);
   });
 
-  return newTxs
+  return newTxs;
 }
-
 
 function getDefaultTxValue(): Transaction {
   // empty "from", "to" and "amount" is 0
