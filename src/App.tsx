@@ -44,7 +44,7 @@ function ComponentOne() {
 
       <h3>Base 64</h3>
       <Box sx={{ width: "100%", wordWrap: "break-word" }}>
-        {Base64.fromUint8Array(new Uint8Array(sha256.arrayBuffer(msg)))}
+        {sha256Base64(msg)}
         </Box>
       </>
   );
@@ -194,17 +194,88 @@ function ComponentTwo() {
             </Box>
 
             <h3>Block Hash</h3>
-      <Box sx={{ width: "100%", wordWrap: "break-word" }}>
-                {Base64.fromUint8Array(
-          new Uint8Array(
-            sha256.arrayBuffer(
-              `{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(
-                state.txs
-              )},"nonce":${state.nonce}}`
-            )
-          )
-        )}
+            <Box sx={{ width: "100%", wordWrap: "break-word" }}>
+                {sha256Base64(
+                    `{"prevBlock":"${state.prevBlockHash}","txs":${JSON.stringify(
+                        state.txs
+                    )},"nonce":${state.nonce}}`
+                )}
+            </Box>
+    </>
+  );
+}
+
+function ComponentThree() {
+  const [msg, setMsg] = React.useState("");
+  const [difficulty, setDifficulty] = React.useState(0);
+  const [miningMsg, setMiningMsg] = React.useState("");
+  
+  const handleMsgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setMsg(event.target.value);
+  };
+
+  const handleDifficultyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDifficulty(parseInt(event.target.value));
+  };
+
+  function handleStartMining() {
+    // difficulty can be NaN when its input is empty
+    const difficultyNum = difficulty || 0;
+    // make target prefix that we want the hash to start with
+    const targetPrefix = Array(difficultyNum).fill('0').join("");
+    // keep track of time
+    const start = new Date().getTime();
+
+    // start mining ⛏️
+    let i = 0;
+    while (sha256Base64(`${msg}${i}`).slice(0, difficultyNum) !== targetPrefix) {
+        i++;
+    }
+
+    const elapsed = (new Date().getTime()) - start;
+
+    setMiningMsg(`Finished! nonce = ${i} (${elapsed} ms)`);
+  }
+
+  return (
+    <>
+        <TextField
+            sx={{ width: "100%", mb: 3 }}
+            id="outlined-name"
+            label="Text"
+            value={msg}
+            onChange={handleMsgChange}
+        />
+        <Box sx={{ 
+            width: "100%", 
+            mt: 3, 
+            display: "flex", 
+            flexDirection: "row", 
+            alignItems: "center",
+            justifyContent:"center",
+            gap: 3,
+        }}>
+            <TextField
+                sx={{ flex: 1 }}
+                label="Difficulty"
+                type="number"
+                value={difficulty}
+                onChange={handleDifficultyChange}
+            />
+            <Button 
+                variant="contained" 
+                sx={{ 
+                    width: "56px", 
+                    height: "56px", 
+                    p: 0, 
+                    minWidth: "unset"
+                }}
+                onClick={handleStartMining}
+            >
+                Go!
+            </Button>
         </Box>
+        <h3>{miningMsg}</h3>
     </>
   );
 }
@@ -264,7 +335,7 @@ export default function BasicTabs() {
         <ComponentTwo />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        TODO!
+        <ComponentThree />
       </TabPanel>
     </Box>
   );
@@ -296,4 +367,8 @@ function getTxData(): Transaction[] {
 function getDefaultTxValue(): Transaction {
   // empty "from", "to" and "amount" is 0
   return ["", "", 0];
+}
+
+function sha256Base64(msg: string): string {
+    return Base64.fromUint8Array(new Uint8Array(sha256.arrayBuffer(msg)))
 }
