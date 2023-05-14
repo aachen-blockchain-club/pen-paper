@@ -212,29 +212,38 @@ function ComponentThree() {
   
   const handleMsgChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMsg(event.target.value);
+    setMiningMsg("");
   };
 
   const handleDifficultyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDifficulty(parseInt(event.target.value));
+    setMiningMsg("");
   };
 
   function handleStartMining() {
-    // difficulty can be NaN when its input is empty
-    const difficultyNum = difficulty || 0;
-    // make target prefix that we want the hash to start with
-    const targetPrefix = Array(difficultyNum).fill('0').join("");
-    // keep track of time
-    const start = new Date().getTime();
+    setMiningMsg("computing... 💎⛏️");
+    // run the rest in TimeOut so the previous state change reflects on the UI
+    setTimeout(
+      () => {
+        // difficulty can be NaN when its input is empty
+        const difficultyNum = difficulty || 0;
+        // make target prefix that we want the hash to start with
+        const targetPrefix = Array(difficultyNum).fill('0').join("");
+        // keep track of time
+        const start = new Date().getTime();
 
-    // start mining ⛏️
-    let i = 0;
-    while (sha256Base64(`${msg}${i}`).slice(0, difficultyNum) !== targetPrefix) {
-        i++;
-    }
+        // start mining ⛏️
+        let i = 0;
+        while (sha256Base64(`${msg}${i}`).slice(0, difficultyNum) !== targetPrefix) {
+            i++;
+        }
 
-    const elapsed = (new Date().getTime()) - start;
+        const elapsed = (new Date().getTime()) - start;
 
-    setMiningMsg(`Finished! nonce = ${i} (${elapsed} ms)`);
+        setMiningMsg(`Finished! nonce = ${i} (${elapsed} ms)`);
+      },
+      100
+    );
   }
 
   return (
