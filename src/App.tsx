@@ -248,7 +248,6 @@ function ComponentThree() {
         />
         <Box sx={{ 
             width: "100%", 
-            mt: 3, 
             display: "flex", 
             flexDirection: "row", 
             alignItems: "center",
